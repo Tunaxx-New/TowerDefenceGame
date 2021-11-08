@@ -1,0 +1,21 @@
+Using pre-set license
+Built from '2020.3/staging' branch; Version is '2020.3.21f1 (a38c86f6690f) revision 10718342'; Using compiler version '192528614'; Build Type 'Release'
+OS: 'Windows 8  (6.2.0) 64bit' Language: 'ru' Physical Memory: 8081 MB
+BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1, IsPro: 0
+
+COMMAND LINE ARGUMENTS:
+C:\Program Files (x86)\Unity Hub\Editor\Unity.exe
+-adb2
+-batchMode
+-noUpm
+-name
+AssetImportWorker38
+-projectPath
+C:/Users/Dan2019/Desktop/Game/TowerDefenceGame/TowerDefence
+-logFile
+Logs/AssetImportWorker38.log
+-srvPort
+58777
+Successfully changed project path to: C:/Users/Dan2019/Desktop/Game/TowerDefenceGame/TowerDefence
+C:/Users/Dan2019/Desktop/Game/TowerDefenceGame/TowerDefence
+Using Asset Import Pipeline V2.
