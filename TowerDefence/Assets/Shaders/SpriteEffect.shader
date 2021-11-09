@@ -15,12 +15,13 @@ Shader "2D/Texture Blend"
          Tags 
          { 
              "RenderType" = "Opaque" 
-             "Queue" = "Transparent+1" 
+             "Queue" = "Transparent" 
          }
  
          Pass
          {
              ZWrite Off
+             Cull Off
              Blend SrcAlpha OneMinusSrcAlpha 
   
              CGPROGRAM
