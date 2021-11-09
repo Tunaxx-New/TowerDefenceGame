@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using Random = UnityEngine.Random;
 
 public class FollowPath : MonoBehaviour
 {
@@ -18,8 +19,12 @@ public class FollowPath : MonoBehaviour
         loop
     }
 
-    public MoveTypes    MoveType;
-    public MovementPath Path;
+    public MoveTypes      MoveType;
+    public MovementPath[] StartPath;
+    public MovementPath[] EndPath;
+    public MovementPath   Path;
+    public int  OnPathNum  = 0;
+    public bool OnStartPath = true;
     [SerializeField]  public float        LinearSpeed = 1;
     [SerializeField]  public float        AcceleratedSpeed = 1;
     [SerializeField]  public float        EndDistance = .1f;
@@ -31,7 +36,6 @@ public class FollowPath : MonoBehaviour
     //Cycle from Movement path
     private IEnumerator<Transform> Points;
     [SerializeField] public int NowPoint;   //End point for object
-    [SerializeField] public MovementPath PathMove;   //End point for object
     [SerializeField] public PathTypes PathType;   //Type
     [SerializeField] public bool Direction;   //End point for object
     [SerializeField] public Transform[] PathPoints; //Al points to move
@@ -39,9 +43,13 @@ public class FollowPath : MonoBehaviour
     //Objects behaviors
     private Transform selfTransform;
 
+    [SerializeField] Transform AnticipationAngle;
+
     void Start()
     {
-        for (int i = 0; i < PathMove.PathPoints.Length; i++) PathPoints[i] = PathMove.PathPoints[i];
+        OnPathNum = RandomBetween0t2();
+        Path = StartPath[OnPathNum];
+        PathPoints = Path.PathPoints;
         //Accelerated math cos
         period = 2 * Math.PI / AcceleratedSpeed;
 
@@ -68,10 +76,15 @@ public class FollowPath : MonoBehaviour
         //Useless procession
         //if (Points == null || Points.Current == null) return;
 
+        Vector3 vectorToTarget = Points.Current.position - AnticipationAngle.position;
+        float angle = Mathf.Atan2(vectorToTarget.y, vectorToTarget.x) * Mathf.Rad2Deg;
+        Quaternion q = Quaternion.AngleAxis(angle, Vector3.forward);
+        AnticipationAngle.rotation = Quaternion.Slerp(AnticipationAngle.rotation, q, Time.deltaTime * 100);
+
         //main movement linear
         if (MoveType == MoveTypes.linear)
         {
-            selfTransform.position = Vector2.MoveTowards(selfTransform.position, Points.Current.position, Time.deltaTime * LinearSpeed);
+            selfTransform.position = Vector2.MoveTowards(selfTransform.position, Points.Current.position, Time.deltaTime * (LinearSpeed - Path.slowSpeed));
         } 
         else if (MoveType == MoveTypes.accelerated)
         {
@@ -79,7 +92,7 @@ public class FollowPath : MonoBehaviour
 
             if (time >= period)time = 0;                                        //Nulling time
 
-            lerp = (float)(1 - Math.Cos(AcceleratedSpeed * time)) / 2;          //Current speed of accelerated movement
+            lerp = (float)(1 - Math.Cos((AcceleratedSpeed - Path.slowSpeed) * time)) / 2;          //Current speed of accelerated movement
 
             selfTransform.position = Vector3.Lerp(selfTransform.position, Points.Current.position, lerp);   //Lerp
         }
@@ -101,7 +114,10 @@ public class FollowPath : MonoBehaviour
         while (true)
         {
             //Next point
-            yield return PathPoints[NowPoint];
+            if (NowPoint > -1)
+            {
+                yield return PathPoints[NowPoint];
+            }
 
             //Dont draw or execute
             if (PathPoints.Length == 1) continue;
@@ -121,8 +137,9 @@ public class FollowPath : MonoBehaviour
                 {
                     NowPoint++;
                 }
-                else if (NowPoint >= PathPoints.Length - 1)
+                else if (NowPoint >= PathPoints.Length)
                 {
+                    if (OnStartPath) ChangePath();
                     NowPoint--;
                 }
             }
@@ -139,5 +156,35 @@ public class FollowPath : MonoBehaviour
                 }
             }
         }
+    }
+
+    int RandomBetween0t2()
+    {
+        return Random.Range(0, 3);
+    }
+
+    void ChangePath()
+    {
+        OnPathNum = RandomBetween0t2();
+        Path = EndPath[OnPathNum];
+        PathPoints = Path.PathPoints;
+
+        NowPoint = 0;
+
+        if (Path == null)
+        {
+            Debug.Log("No path declarated!");
+            return;
+        }
+
+        Points = GetNextPointPosition();    //From MovementPath
+        Points.MoveNext();                  //Start couritine
+
+        if (Points.Current == null)
+        {
+            Debug.Log("No points declarated!");
+            return;
+        }
+        OnStartPath = false;
     }
 }

@@ -13,28 +13,33 @@ public class TowerAngle : MonoBehaviour
 
     private Transform selfTransform;
 
-    //Checking enemy entered
-    private void OnTriggerEnter2D(Collider2D collision)
+    public EnemyStats enemy;
+    private TowerShoot selfShoot;
+
+    public void SetTarget(GameObject target)
     {
-        if (collision.gameObject.tag == "Enemy")
+        //Checkinh rank of target
+        enemy = target.GetComponent<EnemyStats>();
+        Transform enemyTransformApprox = target.transform.Find("AnticipationAngle/AnticipationPos");
+        if (FollowByRank)
         {
-            EnemyStats enemy = collision.gameObject.GetComponent<EnemyStats>();
-            if (FollowByRank) {
-                if (FollowEnemyRank < enemy.Rank)
-                {
-                    FollowEnemy = collision.gameObject.GetComponent<Transform>();
-                    FollowEnemyRank = enemy.Rank;
-                }
-            } else
+            if (FollowEnemyRank < enemy.Rank)
             {
-                FollowEnemy = collision.gameObject.GetComponent<Transform>();
+                FollowEnemy = enemyTransformApprox;
+                FollowEnemyRank = enemy.Rank;
             }
         }
+        else
+        {
+            FollowEnemy = enemyTransformApprox;
+        }
+        selfShoot.StartCoroutine("EveryShootTick");
     }
 
     void Start()
     {
         selfTransform = GetComponent<Transform>();
+        selfShoot = GetComponent<TowerShoot>();
     }
 
     void Update()
@@ -48,6 +53,7 @@ public class TowerAngle : MonoBehaviour
             Quaternion rotation = Quaternion.Euler(new Vector3(0, 0, angle + offset));
 
             transform.rotation = Quaternion.Slerp(selfTransform.rotation, rotation, speed * Time.deltaTime);
+            selfShoot.Target = FollowEnemy.position;
         }
     }
 }

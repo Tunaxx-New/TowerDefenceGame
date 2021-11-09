@@ -14,11 +14,7 @@ public class MovementPath : MonoBehaviour
     [SerializeField] public PathTypes   PathType;   //Type
     [SerializeField] public bool        Direction;   //End point for object
     [SerializeField] public Transform[] PathPoints; //Al points to move
-
-    void Start()
-    {
-
-    }
+    [SerializeField] public float slowSpeed = 0;
 
     //Drawing gizmos in unity editor
     void OnDrawGizmos()
