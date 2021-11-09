@@ -11,6 +11,12 @@ public class FollowPath : MonoBehaviour
         linear,
         accelerated
     }
+    //Path type cycle movement
+    public enum PathTypes
+    {
+        direct,
+        loop
+    }
 
     public MoveTypes    MoveType;
     public MovementPath Path;
@@ -24,12 +30,18 @@ public class FollowPath : MonoBehaviour
 
     //Cycle from Movement path
     private IEnumerator<Transform> Points;
+    [SerializeField] public int NowPoint;   //End point for object
+    [SerializeField] public MovementPath PathMove;   //End point for object
+    [SerializeField] public PathTypes PathType;   //Type
+    [SerializeField] public bool Direction;   //End point for object
+    [SerializeField] public Transform[] PathPoints; //Al points to move
 
     //Objects behaviors
     private Transform selfTransform;
 
     void Start()
     {
+        for (int i = 0; i < PathMove.PathPoints.Length; i++) PathPoints[i] = PathMove.PathPoints[i];
         //Accelerated math cos
         period = 2 * Math.PI / AcceleratedSpeed;
 
@@ -40,7 +52,7 @@ public class FollowPath : MonoBehaviour
             return;
         }
 
-        Points = Path.GetNextPointPosition();    //From MovementPath
+        Points = GetNextPointPosition();    //From MovementPath
         Points.MoveNext();                       //Start couritine
 
         if (Points.Current == null) {
@@ -78,6 +90,54 @@ public class FollowPath : MonoBehaviour
             Points.MoveNext();
             lerp = 0;
             time = 0;
+        }
+    }
+    public IEnumerator<Transform> GetNextPointPosition()
+    {
+        //Don't get positions
+        if (PathPoints == null || PathPoints.Length < 1) yield break;
+
+        //Numerator snake
+        while (true)
+        {
+            //Next point
+            yield return PathPoints[NowPoint];
+
+            //Dont draw or execute
+            if (PathPoints.Length == 1) continue;
+
+            if (Direction)
+            {
+                NowPoint++;
+            }
+            else
+            {
+                NowPoint--;
+            }
+            //On direct type    -> -> ->
+            if (PathType == PathTypes.direct)
+            {
+                if (NowPoint <= 0)
+                {
+                    NowPoint++;
+                }
+                else if (NowPoint >= PathPoints.Length - 1)
+                {
+                    NowPoint--;
+                }
+            }
+            //On loop type      >-> -> ->=
+            if (PathType == PathTypes.loop)
+            {
+                if (NowPoint >= PathPoints.Length)
+                {
+                    NowPoint = 0;
+                }
+                else if (NowPoint < 0)
+                {
+                    NowPoint = PathPoints.Length - 1;
+                }
+            }
         }
     }
 }
