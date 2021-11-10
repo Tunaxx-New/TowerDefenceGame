@@ -35,7 +35,6 @@ public class TowerShoot : MonoBehaviour
             bulletScript.damage = damage;
             bulletScript.Target = Target;
             bulletScript.lifetime = bulletScript.lifetime * ShootSpeed;
-            bulletScript.period = 2 * Math.PI / speed;
             if (Target == null)
             {
                 Destroy(bullet);

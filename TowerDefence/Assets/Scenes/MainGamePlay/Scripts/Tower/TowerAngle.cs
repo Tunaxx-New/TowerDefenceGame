@@ -16,6 +16,9 @@ public class TowerAngle : MonoBehaviour
     public EnemyStats enemy;
     private TowerShoot selfShoot;
 
+    private GameObject[] gameObjects = new GameObject[1000];
+    private int targetsSize = 0; 
+
     public void SetTarget(GameObject target)
     {
         //Checkinh rank of target
@@ -25,15 +28,39 @@ public class TowerAngle : MonoBehaviour
         {
             if (FollowEnemyRank < enemy.Rank)
             {
-                FollowEnemy = enemyTransformApprox;
-                FollowEnemyRank = enemy.Rank;
+                if (FollowEnemy != enemyTransformApprox)
+                {
+                    selfShoot.StartCoroutine("EveryShootTick");
+                    FollowEnemy = enemyTransformApprox;
+                    FollowEnemyRank = enemy.Rank;
+                }
             }
         }
         else
         {
-            FollowEnemy = enemyTransformApprox;
+            if (FollowEnemy != enemyTransformApprox)
+            {
+                selfShoot.StartCoroutine("EveryShootTick");
+                FollowEnemy = enemyTransformApprox;
+            }
         }
-        selfShoot.StartCoroutine("EveryShootTick");
+    }
+    public void AddTarget(GameObject target)
+    {
+        gameObjects[targetsSize] = target;
+        targetsSize++;
+    }
+    public void DelTarget(GameObject target)
+    {
+        for (int i = 0; i < targetsSize; i++)
+        {
+            if (gameObjects[i] == target)
+            {
+                gameObjects[i] = null;
+                targetsSize--;
+                break;
+            }
+        }
     }
 
     void Start()
@@ -54,6 +81,30 @@ public class TowerAngle : MonoBehaviour
 
             transform.rotation = Quaternion.Slerp(selfTransform.rotation, rotation, speed * Time.deltaTime);
             selfShoot.Target = FollowEnemy.position;
+        } else
+        {
+            for (int i = 0; i < targetsSize; i++)
+            {
+                if (gameObjects[i] != null)
+                {
+                    if (FollowByRank)
+                    {
+                        selfShoot.StartCoroutine("EveryShootTick");
+                        FollowEnemy = gameObjects[i].GetComponent<Transform>();
+                        FollowEnemyRank = enemy.Rank;
+                    } else
+                    {
+                        selfShoot.StartCoroutine("EveryShootTick");
+                        FollowEnemy = gameObjects[i].GetComponent<Transform>();
+                    }
+                    break;
+                }
+            }
         }
+    }
+
+    void Destroy()
+    {
+        gameObjects = null;
     }
 }
