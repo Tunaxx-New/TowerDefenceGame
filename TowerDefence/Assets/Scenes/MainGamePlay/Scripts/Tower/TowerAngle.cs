@@ -9,6 +9,7 @@ public class TowerAngle : MonoBehaviour
     [SerializeField] public float     offset= 0;
     [SerializeField] public float     speed = 1;
     private int       FollowEnemyRank = -1;
+    private bool isShooting = true;
     public Transform FollowEnemy;
 
     private Transform selfTransform;
@@ -17,7 +18,8 @@ public class TowerAngle : MonoBehaviour
     private TowerShoot selfShoot;
 
     private GameObject[] gameObjects = new GameObject[1000];
-    private int targetsSize = 0; 
+    private int targetsSize = 0;
+    private bool notarget = false;
 
     public void SetTarget(GameObject target)
     {
@@ -26,29 +28,32 @@ public class TowerAngle : MonoBehaviour
         Transform enemyTransformApprox = target.transform.Find("AnticipationAngle/AnticipationPos");
         if (FollowByRank)
         {
-            if (FollowEnemyRank < enemy.Rank)
+            if (FollowEnemyRank <= enemy.Rank)
             {
-                if (FollowEnemy != enemyTransformApprox)
+                if (isShooting)
                 {
-                    selfShoot.StartCoroutine("EveryShootTick");
-                    FollowEnemy = enemyTransformApprox;
-                    FollowEnemyRank = enemy.Rank;
+                    StartCoroutine(selfShoot.shoot);
+                    isShooting = false;
                 }
+                FollowEnemy = enemyTransformApprox;
+                FollowEnemyRank = enemy.Rank;
             }
         }
         else
         {
-            if (FollowEnemy != enemyTransformApprox)
+            if (isShooting)
             {
-                selfShoot.StartCoroutine("EveryShootTick");
-                FollowEnemy = enemyTransformApprox;
+                StartCoroutine(selfShoot.shoot);
+                isShooting = false;
             }
+            FollowEnemy = enemyTransformApprox;
         }
+        notarget = true;
     }
     public void AddTarget(GameObject target)
     {
         gameObjects[targetsSize] = target;
-        targetsSize++;
+        if (targetsSize < 1000) targetsSize++;
     }
     public void DelTarget(GameObject target)
     {
@@ -57,10 +62,11 @@ public class TowerAngle : MonoBehaviour
             if (gameObjects[i] == target)
             {
                 gameObjects[i] = null;
-                targetsSize--;
                 break;
             }
         }
+        //targetsSize--;
+        notarget = false;
     }
 
     void Start()
@@ -71,7 +77,7 @@ public class TowerAngle : MonoBehaviour
 
     void Update()
     {
-        if (FollowEnemy != null)
+        if (notarget)
         {
             //Accelerated
             Vector3 dir = FollowEnemy.position - selfTransform.position;
@@ -83,21 +89,32 @@ public class TowerAngle : MonoBehaviour
             selfShoot.Target = FollowEnemy.position;
         } else
         {
-            for (int i = 0; i < targetsSize; i++)
+            if (targetsSize <= 0)
             {
-                if (gameObjects[i] != null)
+                if (selfShoot.shoot != null)
                 {
-                    if (FollowByRank)
+                    StopCoroutine(selfShoot.shoot);
+                    isShooting = true;
+                }
+            }
+            else
+            {
+                bool nobody = true;
+                for (int i = 0; i < targetsSize; i++)
+                {
+                    if (gameObjects[i] != null)
                     {
-                        selfShoot.StartCoroutine("EveryShootTick");
-                        FollowEnemy = gameObjects[i].GetComponent<Transform>();
-                        FollowEnemyRank = enemy.Rank;
-                    } else
-                    {
-                        selfShoot.StartCoroutine("EveryShootTick");
-                        FollowEnemy = gameObjects[i].GetComponent<Transform>();
+                        SetTarget(gameObjects[i]);
+                        notarget = true;
+                        nobody = false;
+                        break;
                     }
-                    break;
+                }
+                if (nobody)
+                {
+                    isShooting = true;
+                    notarget = false;
+                    StopCoroutine(selfShoot.shoot);
                 }
             }
         }

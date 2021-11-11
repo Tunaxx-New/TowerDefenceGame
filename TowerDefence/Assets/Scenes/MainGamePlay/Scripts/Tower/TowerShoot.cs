@@ -14,14 +14,16 @@ public class TowerShoot : MonoBehaviour
 
     private Vector3 selfPosition;
     private Transform selfTransform;
+    public IEnumerator shoot;
 
     void Start()
     {
+        shoot = EveryShootTick();
         selfPosition = new Vector3(transform.position.x, transform.position.y, transform.position.z);
         selfTransform = GetComponent<Transform>();
     }
 
-    IEnumerator EveryShootTick()
+    public IEnumerator EveryShootTick()
     {
         for (; ; )
         {

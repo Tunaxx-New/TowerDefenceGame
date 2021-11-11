@@ -13,6 +13,9 @@ public class BulletLife : MonoBehaviour
     public float speed = 1;
     public int damage = 1;
 
+    public float maxAcceleration;
+    private float SpeedTemp = 1;
+
     private float lifecount = 0;
     [SerializeField] public float lifetime = 10;
 
@@ -30,7 +33,8 @@ public class BulletLife : MonoBehaviour
     {
         if (enable)
         {
-            selfTransform.Translate(Vector2.right * speed * Time.deltaTime);
+            selfTransform.Translate(Vector2.right * SpeedTemp * Time.deltaTime);
+            if (SpeedTemp < maxAcceleration) SpeedTemp += speed * Time.deltaTime;
         }
         if (lifecount >= lifetime)
         {

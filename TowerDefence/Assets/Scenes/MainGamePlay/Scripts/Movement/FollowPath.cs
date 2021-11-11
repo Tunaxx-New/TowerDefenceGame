@@ -22,6 +22,7 @@ public class FollowPath : MonoBehaviour
     public MoveTypes      MoveType;
     public MovementPath[] StartPath;
     public MovementPath[] EndPath;
+    public MovementPath[] GameOverPath;
     public MovementPath   Path;
     public int  OnPathNum  = 0;
     public bool OnStartPath = true;
@@ -44,9 +45,11 @@ public class FollowPath : MonoBehaviour
     private Transform selfTransform;
 
     [SerializeField] Transform AnticipationAngle;
+    private EnemyStats enemyStats;
 
     void Start()
     {
+        enemyStats = GetComponent<EnemyStats>();
         OnPathNum = RandomBetween0t2();
         Path = StartPath[OnPathNum];
         PathPoints = Path.PathPoints;
@@ -139,7 +142,16 @@ public class FollowPath : MonoBehaviour
                 }
                 else if (NowPoint >= PathPoints.Length)
                 {
-                    if (OnStartPath) ChangePath();
+                    if (OnStartPath)
+                    {
+                        ChangePath(false);
+                    } else
+                    {
+                        if (enemyStats.currentGate == null)
+                        {
+                            ChangePath(true);
+                        }
+                    }
                     NowPoint--;
                 }
             }
@@ -163,10 +175,18 @@ public class FollowPath : MonoBehaviour
         return Random.Range(0, 3);
     }
 
-    void ChangePath()
+    public void ChangePath(bool end)
     {
-        OnPathNum = RandomBetween0t2();
-        Path = EndPath[OnPathNum];
+        if (end)
+        {
+            Path = GameOverPath[OnPathNum];
+        }
+        else
+        {
+            OnPathNum = RandomBetween0t2();
+            Path = EndPath[OnPathNum];
+            OnStartPath = false;
+        }
         PathPoints = Path.PathPoints;
 
         NowPoint = 0;
@@ -185,6 +205,5 @@ public class FollowPath : MonoBehaviour
             Debug.Log("No points declarated!");
             return;
         }
-        OnStartPath = false;
     }
 }

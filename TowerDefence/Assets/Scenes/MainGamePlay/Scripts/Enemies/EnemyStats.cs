@@ -5,37 +5,71 @@ using UnityEngine;
 public class EnemyStats : MonoBehaviour
 {
     public int Rank;
-    public int health;
+    public int hp;
+    public int damage;
+    public float AttackSpeed;
 
     [SerializeField] Collider2D[] IgnoreCollision;
+
+    private GameObject currentTower;
+    public GameObject currentGate;
+    public IEnumerator attack;
+    private bool nattacking = true;
 
     //Checking enemy entered
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        GameObject obj = collision.gameObject;
+        string tag = obj.tag;
+        if (tag == "Tower")
+        {
+            obj.SendMessage("AddTarget", this.gameObject);
+            obj.SendMessage("SetTarget", this.gameObject);
+            currentTower = obj;
+        } else if (tag == "Bullet")
+        {
+            BulletLife bullet = obj.GetComponent<BulletLife>();
+            hp -= bullet.damage;
+            if (hp <= 0)
+            {
+                currentTower.SendMessage("DelTarget", this.gameObject);
+                Death();
+            }
+            obj.SendMessage("Crash");
+        } else if (tag == "Gate")
+        {
+            currentGate = obj;
+            if (nattacking)
+            {
+                StartCoroutine(attack);
+                nattacking = false;
+            }
+        }
+    }
+    private void OnTriggerExit2D(Collider2D collision)
+    {
         string tag = collision.gameObject.tag;
         if (tag == "Tower")
         {
-            collision.gameObject.SendMessage("AddTarget", this.gameObject);
-            collision.gameObject.SendMessage("SetTarget", this.gameObject);
-        } else if (tag == "Bullet")
+            collision.gameObject.SendMessage("DelTarget", this.gameObject);
+        } else if (tag == "Gate")
         {
-            BulletLife bullet = collision.gameObject.GetComponent<BulletLife>();
-            health -= bullet.damage;
-            if (health <= 0)
-            {
-                collision.gameObject.SendMessage("DelTarget", this.gameObject);
-                Death();
-            }
-            collision.gameObject.SendMessage("Crash", this.gameObject);
-        } else if (tag == "Fence")
-        {
-
+            StopAttackFence(currentGate);
         }
     }
 
+    public void StopAttackFence(GameObject obj)
+    {
+        if (obj == currentGate)
+        {
+            StopCoroutine(attack);
+            currentGate = null;
+            nattacking = true;
+        }
+    }
     public void ApplyDamage(int damage)
     {
-        health -= damage;
+        hp -= damage;
     }
     public void Death()
     {
@@ -45,7 +79,18 @@ public class EnemyStats : MonoBehaviour
     void Start()
     {
         //Ignore collider
-        Collider2D collider = GetComponent<Collider2D>();
+        CircleCollider2D collider = GetComponent<CircleCollider2D>();
         foreach (Collider2D otherCollider in IgnoreCollision) Physics2D.IgnoreCollision(collider, otherCollider);
+
+        //SetAttack courutine
+        attack = AttackCourutine();
+    }
+    private IEnumerator AttackCourutine()
+    {
+        for (; ; )
+        {
+            currentGate.SendMessage("ApplyDamageGate", damage);
+            yield return new WaitForSeconds(AttackSpeed);
+        }
     }
 }
