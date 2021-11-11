@@ -5,13 +5,31 @@ using UnityEngine.UI;
 
 public class TowerMenu : MonoBehaviour
 {
-    public Button[] Open;
-    public Button Close;
-
     private Animator animator;
+    [SerializeField] SpawnTower[] buttons;
+    [SerializeField] ChangeInTower[] cbuttons;
 
-    public void OpenMenu()
+    public void OpenMenu(TowerAngle tower)
     {
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            buttons[i].tower = tower;
+            if (tower.gameObject.GetComponent<TowerShoot>().type == buttons[i].TowerType)
+            {
+                buttons[i].pressed = false;
+                buttons[i].ActiveDe();
+            }
+            else
+            {
+                buttons[i].pressed = true;
+                buttons[i].ActiveDe();
+            }
+        }
+        for (int i = 0; i < cbuttons.Length; i++)
+        {
+            cbuttons[i].tower = tower;
+            cbuttons[i].ActiveDe();
+        }
         animator.SetBool("Open", true);
     }
 

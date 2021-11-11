@@ -10,8 +10,8 @@ public class BulletLife : MonoBehaviour
 
     public Vector3 Target;
     public bool enable = false;
-    public float speed = 1;
-    public int damage = 1;
+    public float speed = 0;
+    public int damage  = 0;
 
     public float maxAcceleration;
     private float SpeedTemp = 1;
