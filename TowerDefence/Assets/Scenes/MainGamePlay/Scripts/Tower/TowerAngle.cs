@@ -9,16 +9,20 @@ public class TowerAngle : MonoBehaviour
     //Interactable
     [SerializeField] public bool FollowByRank = true;
     [SerializeField] public float speed = 1;
+    [SerializeField] public int cost = 0;
 
     //Script values
     [SerializeField] public float     offset= 0;
     private int       FollowEnemyRank = -1;
-    private bool isShooting = true;
+    public bool isShooting = true;
     public Transform FollowEnemy;
 
     private Transform selfTransform;
 
+    [SerializeField] Animation[] spawnAnimation;
     [SerializeField] SpriteRenderer spriteRenderer;
+    [SerializeField] SpriteRenderer spriteRendererLight;
+    private Sprite[] LightImages = new Sprite[8];
     private Sprite[] TowerImages = new Sprite[8];
 
     public EnemyStats enemy;
@@ -32,6 +36,14 @@ public class TowerAngle : MonoBehaviour
     {
         FollowByRank = !FollowByRank;
     }
+    public void StartShoot()
+    {
+        if (isShooting)
+        {
+            StartCoroutine(selfShoot.shoot);
+            isShooting = false;
+        }
+    }
     public void SetTarget(GameObject target)
     {
         //Checkinh rank of target
@@ -41,22 +53,14 @@ public class TowerAngle : MonoBehaviour
         {
             if (FollowEnemyRank <= enemy.Rank)
             {
-                if (isShooting)
-                {
-                    StartCoroutine(selfShoot.shoot);
-                    isShooting = false;
-                }
+                StartShoot();
                 FollowEnemy = enemyTransformApprox;
                 FollowEnemyRank = enemy.Rank;
             }
         }
         else
         {
-            if (isShooting)
-            {
-                StartCoroutine(selfShoot.shoot);
-                isShooting = false;
-            }
+            StartShoot();
             FollowEnemy = enemyTransformApprox;
         }
         notarget = true;
@@ -84,23 +88,43 @@ public class TowerAngle : MonoBehaviour
     public void SetType(int tp)
     {
         selfShoot.type = tp;
-        switch (tp)
+
+        speed = info.RotateSpeed[tp];
+        selfShoot.ShootSpeed = info.ShotSpeed[tp];
+        selfShoot.speed = info.Speed[tp];
+        selfShoot.damage = info.Damage[tp];
+        selfShoot.increaseDam = info.IncreaseDamage[tp];
+        cost = info.Cost[tp];
+        spawnAnimation[0].Play("spawnTower");
+        spawnAnimation[1].Play("teethTower");
+        StartCoroutine("SpawnTime");
+    }
+    IEnumerator SpawnTime()
+    {
+        yield return new WaitForSeconds(0.5f);
+        TowerImages = info.Tower1Images;
+        LightImages = info.Light1Images;
+        spriteRendererLight.gameObject.SetActive(true);
+        switch (selfShoot.type)
         {
             case 0:
                 {
                     selfShoot.enable = false;
                     spriteRenderer.sprite = null;
                     TowerImages = info.TowerImagesNull;
+                    LightImages = info.LightImagesNull;
+                    spriteRendererLight.gameObject.SetActive(false);
                 }
                 break;
             case 1:
                 {
-                    selfShoot.enable = true;
-                    TowerImages = info.Tower1Images;
+                    selfShoot.enable = false;
 
-                    speed = info.RotateSpeed[tp];
-                    selfShoot.ShootSpeed = info.ShotSpeed[tp];
-                    selfShoot.speed = info.Speed[tp];
+                    //isShooting = true;
+                    //StopCoroutine(selfShoot.shoot);
+                    StartShoot();
+                    selfShoot.enable = true;
+                    selfShoot.PlayFire();
 
                     SpriteWithAngle();
                 }
@@ -113,6 +137,7 @@ public class TowerAngle : MonoBehaviour
         while (rotate < 0) rotate += 360;
         int angle = (int)(rotate / 45.0f);
         spriteRenderer.sprite = TowerImages[angle];
+        spriteRendererLight.sprite = LightImages[angle];
     }
 
     void Start()
@@ -183,5 +208,6 @@ public class TowerAngle : MonoBehaviour
     {
         gameObjects = null;
         TowerImages = null;
+        LightImages = null;
     }
 }

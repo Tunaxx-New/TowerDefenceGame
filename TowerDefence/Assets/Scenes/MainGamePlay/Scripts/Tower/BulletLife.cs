@@ -18,15 +18,21 @@ public class BulletLife : MonoBehaviour
 
     private float lifecount = 0;
     [SerializeField] public float lifetime = 10;
+    [SerializeField] GameObject FireBlick;
 
     public void Crash()
     {
+        if (Global.souls > 0) Global.souls--;
+        GameObject fire = Instantiate(FireBlick, new Vector3(transform.position.x, transform.position.y, transform.position.z), Quaternion.identity);
+        fire.GetComponent<Animation>().Play(fire.GetComponent<FireSelfDestroy>().animationName);
+        fire.GetComponent<FireSelfDestroy>().StartCoroutine("OnCompleteAnimation");
         Destroy(this.gameObject);
     }
 
     void Start()
     {
         selfTransform = GetComponent<Transform>();
+        GetComponent<Animation>().Play("SoulBullet");
     }
 
     void Update()

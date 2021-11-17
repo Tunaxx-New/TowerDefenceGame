@@ -6,9 +6,11 @@ Shader "2D/Texture Blend2"
      {
         _MainTex ("Sprite Texture", 2D) = "white" {}
         _Color ("Alpha Color Key", Color) = (0,0,0,1)
+        _AdditionalColor ("+Color Key", Color) = (0,0,0,1)
         _Brightness ("Brightness color (gray default)", Color) = (0,0,0,1)
         _Contrast ("Contrast", float) = 1
         _PowerOfMult ("Iterator", int) = 1
+        [Toggle ]_ChangeColor ("ChangeColor", float) = 0
      }
      SubShader
      {
@@ -23,6 +25,7 @@ Shader "2D/Texture Blend2"
          {
              Lighting On
              ZWrite Off
+             Cull Off
              Blend SrcAlpha OneMinusSrcAlpha
              //Cull front 
              LOD 100
@@ -35,8 +38,10 @@ Shader "2D/Texture Blend2"
              sampler2D _MainTex;
              float4 _Color;
              float4 _Brightness;
+             float4 _AdditionalColor;
              float _Contrast;
              int _PowerOfMult;
+             float _ChangeColor;
  
              struct Vertex
              {
@@ -69,7 +74,11 @@ Shader "2D/Texture Blend2"
  
                  half4 c = tex2D (_MainTex, IN.uv_MainTex);
 
-                 o.rgb = c.rgb + _Brightness;
+                 if (_ChangeColor) {
+                    o.rgb = _Brightness;
+                 } else {
+                    o.rgb = c.rgb + _Brightness;
+                 }
 
                  float factor = (259 * (_Contrast + 255)) / (255 * (259 - _Contrast));
 
@@ -87,7 +96,6 @@ Shader "2D/Texture Blend2"
                  o.a -= _Color.a;
                  if (o.a < 0)
                  o.a = 0;
-
                  return o;
              }
  

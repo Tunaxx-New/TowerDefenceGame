@@ -9,12 +9,14 @@ public class TowerMenu : MonoBehaviour
     [SerializeField] SpawnTower[] buttons;
     [SerializeField] ChangeInTower[] cbuttons;
 
-    public void OpenMenu(TowerAngle tower)
+    public void OpenMenu(GameObject tower)
     {
+        TowerAngle a = tower.GetComponent<TowerAngle>();
+        TowerShoot b = tower.GetComponent<TowerShoot>();
         for (int i = 0; i < buttons.Length; i++)
         {
-            buttons[i].tower = tower;
-            if (tower.gameObject.GetComponent<TowerShoot>().type == buttons[i].TowerType)
+            buttons[i].tower = a;
+            if (b.type == buttons[i].TowerType)
             {
                 buttons[i].pressed = false;
                 buttons[i].ActiveDe();
@@ -27,8 +29,10 @@ public class TowerMenu : MonoBehaviour
         }
         for (int i = 0; i < cbuttons.Length; i++)
         {
-            cbuttons[i].tower = tower;
+            cbuttons[i].tower = a;
+            cbuttons[i].towersh = b;
             cbuttons[i].ActiveDe();
+            cbuttons[i].SetText();
         }
         animator.SetBool("Open", true);
     }

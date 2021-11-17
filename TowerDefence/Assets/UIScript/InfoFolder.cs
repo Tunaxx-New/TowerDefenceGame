@@ -21,9 +21,14 @@ public class InfoFolder : MonoBehaviour
         switch (tag) {
             case "FollowByRank":
                 {
-                    text.text = "Tower will target on higher rank enemy";
+                    text.text = Strings.FBRinfo[Strings.lang];
                 }
-            break;
+                break;
+            case "Damage":
+                {
+                    text.text = Strings.DMGinfo[Strings.lang];
+                }
+                break;
         }
     }
 }

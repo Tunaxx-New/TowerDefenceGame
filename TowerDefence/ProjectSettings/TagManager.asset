@@ -8,6 +8,7 @@ TagManager:
   - Tower
   - Bullet
   - Gate
+  - Mirror
   layers:
   - Default
   - TransparentFX

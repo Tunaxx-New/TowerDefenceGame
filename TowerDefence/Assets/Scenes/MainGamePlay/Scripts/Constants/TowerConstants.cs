@@ -9,9 +9,15 @@ public class TowerConstants : MonoBehaviour
     public float[] ShotSpeed;
     public int[]   Speed;
     public int[]   Damage;
+    public int[]   IncreaseDamage;
+    public int[]   Cost;
 
     public GameObject[] BulletType;
 
     public Sprite[] TowerImagesNull;
+    public Sprite[] LightImagesNull;
+
     public Sprite[] Tower1Images;
+    public Sprite[] Light1Images;
+
 }

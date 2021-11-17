@@ -10,6 +10,7 @@ public class EnemyStats : MonoBehaviour
     public float AttackSpeed;
 
     [SerializeField] Collider2D[] IgnoreCollision;
+    [SerializeField] Transform mirroring;
 
     private GameObject currentTower;
     public GameObject currentGate;
@@ -44,6 +45,9 @@ public class EnemyStats : MonoBehaviour
                 StartCoroutine(attack);
                 nattacking = false;
             }
+        } else if (tag == "Mirror")
+        {
+            mirroring.localScale = new Vector3(-mirroring.localScale.x, mirroring.localScale.y, mirroring.localScale.z);
         }
     }
     private void OnTriggerExit2D(Collider2D collision)
@@ -55,6 +59,9 @@ public class EnemyStats : MonoBehaviour
         } else if (tag == "Gate")
         {
             StopAttackFence(currentGate);
+        } else if (tag == "Mirror")
+        {
+            mirroring.localScale = new Vector3(-mirroring.localScale.x, mirroring.localScale.y, mirroring.localScale.z);
         }
     }
 
